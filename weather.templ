@@ -1,0 +1,71 @@
+package main
+
+css Base() {
+	background-color: #f0f0f0;
+	font-family: Arial, sans-serif;
+	color: #333;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+script GetLocation(id string) {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            console.log(latitude, longitude);
+            const element = document.getElementById(id)
+            element.setAttribute("data", `${latitude},${longitude}`)
+            return
+        },
+        function(error) {
+            console.log("Unable to retrieve your location", error)
+        }
+        );
+    }else {
+        console.log("Geolocation is not supported by this browser.");
+    }
+}
+
+script FetchWeather(id string) {
+    const element = document.getElementById(id)
+    const dataValue = element.getAttribute("data");
+    console.log("dataValue:  ",dataValue);
+    const [latitude, longitude] = dataValue.split(",");
+
+    const apikey = "d3f6e48d659248fdb9464301241002"
+    const url = `https://api.weatherapi.com/v1/current.json?key=${apikey}&q=Lalitpur&aqi=no`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Weather Data: ',data);
+            textContent = `${data.location.country} <br></br>
+            ${data.current.condition.text} <br></br>
+            ${data.current.feelslike_c}°C <br></br>
+            <img src="${data.current.condition.icon}"/>`
+            element.innerHTML = textContent
+        })   
+        .catch(error => {
+            console.log("Error fetching weather data", error);
+        });
+
+}
+
+templ WeatherForcast(name string) {
+	<html>
+		<head>
+			<title>Weather</title>
+		</head>
+		<body onload={ GetLocation("data-div") } class={ Base() }>
+			<h1 onclick={FetchWeather("data-div")}>Hello, { name }</h1>
+			<div id="data-div"></div>
+		</body>
+	</html>
+}
